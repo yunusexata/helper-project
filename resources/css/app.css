@@ -1,0 +1,170 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-zinc-50: #fafafa;
+    --color-zinc-100: #f5f5f5;
+    --color-zinc-200: #e5e5e5;
+    --color-zinc-300: #d4d4d4;
+    --color-zinc-400: #a3a3a3;
+    --color-zinc-500: #737373;
+    --color-zinc-600: #525252;
+    --color-zinc-700: #404040;
+    --color-zinc-800: #262626;
+    --color-zinc-900: #171717;
+    --color-zinc-950: #0a0a0a;
+
+    --color-accent: var(--color-neutral-800);
+    --color-accent-content: var(--color-neutral-800);
+    --color-accent-foreground: var(--color-white);
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-white);
+        --color-accent-content: var(--color-white);
+        --color-accent-foreground: var(--color-neutral-800);
+    }
+}
+
+@layer base {
+
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+[data-flux-field]:not(ui-radio, ui-checkbox) {
+    @apply grid gap-2;
+}
+
+[data-flux-label] {
+    @apply  !mb-0 !leading-tight;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+/* \[:where(&)\]:size-4 {
+    @apply size-4;
+} */
+
+/* Layout Redesign - Formal Office Style */
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.menu-item-active {
+    background-color: var(--color-blue-50);
+    color: var(--color-blue-600);
+    border-left: 4px solid var(--color-blue-600);
+    padding-left: 0.375rem;
+}
+
+.dark .menu-item-active {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: var(--color-blue-400);
+    border-left-color: var(--color-blue-500);
+}
+
+.menu-item-inactive {
+    color: var(--color-slate-600);
+}
+
+.menu-item-inactive:hover {
+    background-color: var(--color-slate-50);
+    color: var(--color-slate-900);
+    transform: translateX(4px);
+}
+
+.dark .menu-item-inactive {
+    color: var(--color-slate-400);
+}
+
+.dark .menu-item-inactive:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+    color: var(--color-slate-100);
+}
+
+.menu-item-icon-active {
+    color: var(--color-blue-600);
+}
+
+.dark .menu-item-icon-active {
+    color: var(--color-blue-400);
+}
+
+.menu-item-icon-inactive {
+    color: var(--color-slate-400);
+    transition: color 0.2s;
+}
+
+.menu-item-inactive:hover .menu-item-icon-inactive {
+    color: var(--color-slate-600);
+}
+
+.dark .menu-item-inactive:hover .menu-item-icon-inactive {
+    color: var(--color-slate-200);
+}
+
+.menu-dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    transition: all 0.2s ease-in-out;
+}
+
+.menu-dropdown-item-active {
+    color: var(--color-blue-600);
+    font-weight: 600;
+    background-color: rgba(37, 99, 235, 0.05);
+}
+
+.dark .menu-dropdown-item-active {
+    color: var(--color-blue-400);
+}
+
+.menu-dropdown-item-inactive {
+    color: var(--color-slate-500);
+}
+
+.menu-dropdown-item-inactive:hover {
+    color: var(--color-slate-900);
+    transform: translateX(4px);
+}
+
+.dark .menu-dropdown-item-inactive {
+    color: var(--color-slate-400);
+}
+
+.dark .menu-dropdown-item-inactive:hover {
+    color: var(--color-slate-100);
+}
