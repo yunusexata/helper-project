@@ -51,13 +51,24 @@ class Dashboard extends Component
         $this->helpersList = collect();
 
         $user = auth()->user();
+        $isHelper = false;
 
-        if ($user->hasRole('Helper')) {
+        try {
+            $isHelper = $user && $user->hasRole('Helper');
+        } catch (\Throwable) {
+            $isHelper = false;
+        }
+
+        if ($isHelper) {
             $this->whitelist = EmployeeWhitelist::where('email', $user->email)->first();
             $this->loadHelperRoutines();
             $this->selectNextIncomplete();
         } else {
-            $this->helpersList = User::role('Helper')->get();
+            try {
+                $this->helpersList = User::role('Helper')->get();
+            } catch (\Throwable) {
+                $this->helpersList = collect();
+            }
             $this->adminSelectedHelperId = $this->helpersList->first()?->id;
             $this->loadAdminRoutines();
         }
@@ -321,7 +332,14 @@ class Dashboard extends Component
      */
     public function render(): View
     {
-        if (auth()->user()->hasRole('Helper')) {
+        $isHelper = false;
+        try {
+            $isHelper = auth()->user()?->hasRole('Helper') ?? false;
+        } catch (\Throwable) {
+            $isHelper = false;
+        }
+
+        if ($isHelper) {
             return view('livewire.helper-dashboard');
         }
 
