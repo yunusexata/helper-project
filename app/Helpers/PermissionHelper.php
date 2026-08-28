@@ -2,7 +2,6 @@
 
 namespace App\Helpers;
 
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class PermissionHelper
@@ -168,6 +167,10 @@ class PermissionHelper
         $access = $exploded_route_names[0];
         $route_type = isset($exploded_route_names[1]) ? $exploded_route_names[1] : 'index';
 
+        if ($access === 'helper_jobdesk_history') {
+            $access = self::ACCESS_HELPER_JOBDESK_DAILY_HISTORY;
+        }
+
         if (in_array($route_type, self::ROUTE_TYPE_CREATE)) {
             $type = self::TYPE_CREATE;
         } elseif (in_array($route_type, self::ROUTE_TYPE_READ)) {
@@ -179,8 +182,20 @@ class PermissionHelper
         }
 
         // Pemeriksaan Hak Akses
-        $user = $user == null ? User::find(Auth::id()) : $user;
+        $user = $user ?? Auth::user();
 
-        return $user->hasPermissionTo(self::transform($access, $type));
+        if (! $user) {
+            return false;
+        }
+
+        if ($user->hasRole(['Super Admin', 'Admin'])) {
+            return true;
+        }
+
+        try {
+            return $user->hasPermissionTo(self::transform($access, $type));
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

@@ -142,7 +142,7 @@
     @livewireScripts
 <script>
     
-        Livewire.on("{{ Alert::EVENT_INFO }}", (event) => {
+        Livewire.on("{{ \App\Helpers\Alert::EVENT_INFO }}", (event) => {
             Swal.fire({
                 icon: event[0],
                 title: event[1],
@@ -150,11 +150,11 @@
             });
         });
 
-        Livewire.on("{{ Alert::EVENT_CONSOLE_LOG }}", (event) => {
+        Livewire.on("{{ \App\Helpers\Alert::EVENT_CONSOLE_LOG }}", (event) => {
             console.log(event[0])
         });
 
-        Livewire.on("{{ Alert::EVENT_CONFIRMATION }}", (event) => {
+        Livewire.on("{{ \App\Helpers\Alert::EVENT_CONFIRMATION }}", (event) => {
             Swal.fire({
                 icon: event[0],
                 title: event[1],
@@ -172,7 +172,7 @@
                 }
             });
         });
-        Livewire.on("{{ Alert::EVENT_INFORMATION }}", (event) => {
+        Livewire.on("{{ \App\Helpers\Alert::EVENT_INFORMATION }}", (event) => {
             console.log(event);
             Swal.fire({
                 position: "top-end",

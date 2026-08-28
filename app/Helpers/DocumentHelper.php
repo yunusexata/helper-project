@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-class CacheHelper
+class DocumentHelper
 {
     public function convertPdfToImages(string $path): array
     {
