@@ -1,0 +1,22 @@
+{
+    frankenphp {
+        php_ini {
+            max_file_uploads 10000
+            max_multipart_body_parts 10000
+            post_max_size 1024M
+            upload_max_filesize 1024M
+            memory_limit 1024M
+            max_execution_time 300
+            max_input_time 300
+        }
+    }
+}
+
+:{$PORT:8080} {
+    root * /app/public
+    encode zstd gzip
+
+    php_server {
+        resolve_root_symlink
+    }
+}
