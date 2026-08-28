@@ -140,6 +140,7 @@
 </body>
 
     @livewireScripts
+    @fluxScripts
 <script>
     
         Livewire.on("{{ Alert::EVENT_INFO }}", (event) => {

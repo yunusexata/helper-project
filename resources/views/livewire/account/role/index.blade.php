@@ -2,7 +2,9 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Manajemen Jabatan (Role)</h1>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Kelola data jabatan dan pengaturan hak aksesnya.</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Kelola data jabatan dan pengaturan hak aksesnya.
+            </p>
         </div>
         
         <div>

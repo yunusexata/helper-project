@@ -19,8 +19,8 @@ class HelperJobdeskHistorySeeder extends Seeder
         // 1. Create 3 Helpers (Users + EmployeeWhitelist)
         $helpersData = [
             [
-                'name' => 'Budi Santoso',
-                'email' => 'budi.santoso@exata.co.id',
+                'name' => 'Pak Musa',
+                'email' => 'test@gmail.com',
                 'employee_id' => 'EMP-001',
                 'division' => 'Helper Office',
             ],
@@ -73,31 +73,31 @@ class HelperJobdeskHistorySeeder extends Seeder
 
         // 2. Create sample history logs for today for Budi Santoso (first helper)
         if ($firstWhitelist) {
-            $todayDayName = strtolower(now()->locale('id')->dayName);
+            // $todayDayName = strtolower(now()->locale('id')->dayName);
 
             // Get routines of today
-            $routines = HelperJobdeskRoutine::where('day', $todayDayName)
-                ->orderBy('order')
-                ->get();
+            // $routines = HelperJobdeskRoutine::where('day', $todayDayName)
+            //     ->orderBy('order')
+            //     ->get();
 
-            // Mark the first two routines as completed today
-            foreach ($routines->take(2) as $index => $routine) {
-                HelperJobdeskDailyHistory::firstOrCreate(
-                    [
-                        'employee_whitelists_id' => $firstWhitelist->id,
-                        'subject_id' => $routine->id,
-                        'subject_type' => HelperJobdeskRoutine::class,
-                    ],
-                    [
-                        'employee_whitelists_name' => $firstWhitelist->name,
-                        'start_at' => now()->subHours(4 - $index),
-                        'finish_at' => now()->subHours(3 - $index),
-                        'note' => 'Aktivitas rutin dikerjakan dengan baik.',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]
-                );
-            }
+            // // Mark the first two routines as completed today
+            // foreach ($routines->take(2) as $index => $routine) {
+            //     HelperJobdeskDailyHistory::firstOrCreate(
+            //         [
+            //             'employee_whitelists_id' => $firstWhitelist->id,
+            //             'subject_id' => $routine->id,
+            //             'subject_type' => HelperJobdeskRoutine::class,
+            //         ],
+            //         [
+            //             'employee_whitelists_name' => $firstWhitelist->name,
+            //             'start_at' => now()->subHours(4 - $index),
+            //             'finish_at' => now()->subHours(3 - $index),
+            //             'note' => 'Aktivitas rutin dikerjakan dengan baik.',
+            //             'created_at' => now(),
+            //             'updated_at' => now(),
+            //         ]
+            //     );
+            // }
         }
     }
 }

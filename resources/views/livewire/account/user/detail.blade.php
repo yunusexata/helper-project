@@ -87,58 +87,6 @@
                 </p>
             @enderror
         </div>
-        
-        @if ($role === App\Models\User::ROLE_SALES)
-            {{-- REVIEW TYPE --}}
-            <div>
-                <p class="mb-2.5 block text-sm font-medium text-dark dark:text-white">
-                    Jenis Review
-                </p>
-
-                <div class="space-y-3">
-                    <label class="flex cursor-pointer items-center text-sm font-medium text-gray-700 dark:text-gray-400">
-                        <input
-                            wire:model.live="upod_type"
-                            type="radio"
-                            name="upod_type"
-                            value="{{ App\Models\User::UPOD_TYPE_GOOGLE }}"
-                            class="sr-only peer"
-                        >
-
-                        <div
-                            class="mr-3 flex h-5 w-5 items-center justify-center rounded-full border-[1.25px] border-gray-300 dark:border-gray-700 peer-checked:border-brand-500 peer-checked:bg-brand-500"
-                        >
-                            <div
-                                class="h-2 w-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"
-                            ></div>
-                        </div>
-
-                        Google Review
-                    </label>
-
-                    <label class="flex cursor-pointer items-center text-sm font-medium text-gray-700 dark:text-gray-400">
-                        <input
-                            wire:model.live="upod_type"
-                            type="radio"
-                            name="upod_type"
-                            value="{{ App\Models\User::UPOD_TYPE_RISET }}"
-                            class="sr-only peer"
-                        >
-
-                        <div
-                            class="mr-3 flex h-5 w-5 items-center justify-center rounded-full border-[1.25px] border-gray-300 dark:border-gray-700 peer-checked:border-brand-500 peer-checked:bg-brand-500"
-                        >
-                            <div
-                                class="h-2 w-2 rounded-full bg-white opacity-0 peer-checked:opacity-100"
-                            ></div>
-                        </div>
-
-                        Pertanyaan Riset
-                    </label>
-                </div>
-            </div>
-        @endif
-
     </div>
 
     <div class="mt-6 flex justify-end">

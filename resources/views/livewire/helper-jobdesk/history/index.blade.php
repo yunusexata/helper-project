@@ -1,7 +1,7 @@
 <div class="p-6 max-w-5xl mx-auto">
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Kerja Harian (History)</h1>
+        <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Riwayat Kerja Harian</h1>
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Laporan riwayat aktivitas rutin harian petugas.</p>
     </div>
 
@@ -10,7 +10,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Petugas Filter -->
             <div>
-                <label for="petugas-select" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Petugas (Helper)</label>
+                <label for="petugas-select" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Petugas</label>
                 <select id="petugas-select" wire:model.live="petugasId" 
                     class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-blue-500">
                     <option value="">-- Pilih Petugas --</option>
@@ -22,7 +22,7 @@
 
             <!-- Tanggal Filter -->
             <div>
-                <label for="tanggal-input" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tanggal Laporan</label>
+                <label for="tanggal-input" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tanggal</label>
                 <input id="tanggal-input" type="date" wire:model.live="tanggal" 
                     class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-blue-500">
             </div>
@@ -39,7 +39,7 @@
         </div>
     @else
         <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-200 dark:border-slate-700 p-8 text-center text-slate-500 dark:text-slate-400">
-            Silakan pilih Petugas dan Tanggal untuk menampilkan riwayat jobdesk.
+            Silakan pilih Petugas dan Tanggal untuk menampilkan riwayat.
         </div>
     @endif
 </div>

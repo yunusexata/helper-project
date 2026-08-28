@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Helpers\Alert;
 use App\Models\EmployeeWhitelist;
 use App\Models\HelperJobdeskDailyHistory;
 use App\Models\HelperJobdeskDailyHistoryAttachment;
@@ -21,9 +22,9 @@ class Dashboard extends Component
     /**
      * Helper specific properties.
      */
-    public Collection $routines;
+    public Collection $groupedRoutines;
 
-    public ?int $selectedRoutineId = null;
+    public ?string $selectedGroupName = null;
 
     public string $note = '';
 
@@ -45,7 +46,7 @@ class Dashboard extends Component
      */
     public function mount(): void
     {
-        $this->routines = collect();
+        $this->groupedRoutines = collect();
         $this->adminRoutines = collect();
         $this->helpersList = collect();
 
@@ -63,7 +64,7 @@ class Dashboard extends Component
     }
 
     /**
-     * Load today's routines with completion statuses for the logged-in helper.
+     * Load today's routines grouped by task_group for the helper.
      */
     public function loadHelperRoutines(): void
     {
@@ -76,27 +77,40 @@ class Dashboard extends Component
             ->orderBy('order')
             ->get();
 
-        foreach ($routines as $routine) {
+        $grouped = $routines->groupBy('task_group');
+        $processedGroups = collect();
+
+        foreach ($grouped as $groupName => $activities) {
+            $firstActivity = $activities->first();
+
             $history = HelperJobdeskDailyHistory::where('employee_whitelists_id', $this->whitelist->id)
-                ->where('subject_id', $routine->id)
+                ->where('subject_id', $firstActivity->id)
                 ->where('subject_type', HelperJobdeskRoutine::class)
                 ->whereDate('created_at', today())
                 ->first();
 
-            $routine->is_completed = ! empty($history) && ! empty($history->finish_at);
-            $routine->is_in_progress = ! empty($history) && empty($history->finish_at);
-            $routine->history_id = $history?->id;
-            $routine->start_at = $history?->start_at;
-            $routine->finish_at = $history?->finish_at;
-            $routine->logged_note = $history?->note;
-            $routine->attachments = $history ? $history->attachments : collect();
+            $isCompleted = ! empty($history) && ! empty($history->finish_at);
+            $isInProgress = ! empty($history) && empty($history->finish_at);
+
+            $processedGroups->put($groupName, (object) [
+                'name' => $groupName,
+                'activities' => $activities,
+                'is_completed' => $isCompleted,
+                'is_in_progress' => $isInProgress,
+                'history_id' => $history?->id,
+                'start_at' => $history?->start_at,
+                'finish_at' => $history?->finish_at,
+                'logged_note' => $history?->note,
+                'attachments' => $history ? $history->attachments : collect(),
+                'first_activity_id' => $firstActivity->id,
+            ]);
         }
 
-        $this->routines = $routines;
+        $this->groupedRoutines = $processedGroups;
     }
 
     /**
-     * Load today's routines progress for the admin-selected helper.
+     * Load today's routines progress grouped by task_group for the admin view.
      */
     public function loadAdminRoutines(): void
     {
@@ -125,25 +139,36 @@ class Dashboard extends Component
             ->orderBy('order')
             ->get();
 
-        foreach ($routines as $routine) {
+        $grouped = $routines->groupBy('task_group');
+        $processedGroups = collect();
+
+        foreach ($grouped as $groupName => $activities) {
+            $firstActivity = $activities->first();
+
             $history = HelperJobdeskDailyHistory::where('employee_whitelists_id', $helperWhitelist->id)
-                ->where('subject_id', $routine->id)
+                ->where('subject_id', $firstActivity->id)
                 ->where('subject_type', HelperJobdeskRoutine::class)
                 ->whereDate('created_at', today())
                 ->first();
 
-            $routine->is_completed = ! empty($history) && ! empty($history->finish_at);
-            $routine->start_at = $history?->start_at;
-            $routine->finish_at = $history?->finish_at;
-            $routine->logged_note = $history?->note;
-            $routine->attachments = $history ? $history->attachments : collect();
+            $isCompleted = ! empty($history) && ! empty($history->finish_at);
+
+            $processedGroups->put($groupName, (object) [
+                'name' => $groupName,
+                'activities' => $activities,
+                'is_completed' => $isCompleted,
+                'start_at' => $history?->start_at,
+                'finish_at' => $history?->finish_at,
+                'logged_note' => $history?->note,
+                'attachments' => $history ? $history->attachments : collect(),
+            ]);
         }
 
-        $this->adminRoutines = $routines;
+        $this->adminRoutines = $processedGroups;
     }
 
     /**
-     * Helper list updated trigger.
+     * Trigger when the selected helper changes in the admin dropdown.
      */
     public function updatedAdminSelectedHelperId(): void
     {
@@ -151,81 +176,108 @@ class Dashboard extends Component
     }
 
     /**
-     * Select a specific routine to view.
+     * Select a specific group to view details.
      */
-    public function selectRoutine(int $id): void
+    public function selectGroup(string $groupName): void
     {
-        $this->selectedRoutineId = $id;
+        $this->selectedGroupName = $groupName;
         $this->note = '';
         $this->attachments = [];
         $this->resetErrorBag();
     }
 
     /**
-     * Automatically select the first incomplete routine on the list.
+     * Automatically select the first incomplete group.
      */
     public function selectNextIncomplete(): void
     {
-        $firstIncomplete = $this->routines->first(fn ($r) => ! $r->is_completed);
+        $firstIncomplete = $this->groupedRoutines->first(fn ($g) => ! $g->is_completed);
 
         if ($firstIncomplete) {
-            $this->selectRoutine($firstIncomplete->id);
-        } elseif ($this->routines->isNotEmpty()) {
-            $this->selectRoutine($this->routines->first()->id);
+            $this->selectGroup($firstIncomplete->name);
+        } elseif ($this->groupedRoutines->isNotEmpty()) {
+            $this->selectGroup($this->groupedRoutines->keys()->first());
         }
     }
 
     /**
-     * Start the selected task (Mulai Kerja).
+     * Start the group task (Mulai Kerja).
      */
-    public function startTask(int $id): void
+    public function startTask(int $firstActivityId): void
     {
         if (! $this->whitelist) {
+            return;
+        }
+
+        // Prevent duplicate starts
+        $exists = HelperJobdeskDailyHistory::where('employee_whitelists_id', $this->whitelist->id)
+            ->where('subject_id', $firstActivityId)
+            ->where('subject_type', HelperJobdeskRoutine::class)
+            ->whereDate('created_at', today())
+            ->exists();
+
+        if ($exists) {
             return;
         }
 
         HelperJobdeskDailyHistory::create([
             'employee_whitelists_id' => $this->whitelist->id,
             'employee_whitelists_name' => $this->whitelist->name,
-            'subject_id' => $id,
+            'subject_id' => $firstActivityId,
             'subject_type' => HelperJobdeskRoutine::class,
             'start_at' => now(),
             'finish_at' => null,
         ]);
 
         $this->loadHelperRoutines();
-        $this->selectRoutine($id);
+
+        $group = $this->groupedRoutines->first(fn ($g) => $g->first_activity_id === $firstActivityId);
+        if ($group) {
+            $this->selectGroup($group->name);
+        }
+        Alert::success($this, 'Berhasil', 'Tugas dimulai. Timer sedang berjalan.');
     }
 
     /**
-     * Complete the selected task (Selesai Kerja).
+     * Complete the group task (Selesai Kerja).
      */
-    public function completeTask(int $id, bool $direct = false): void
+    public function completeTask(int $firstActivityId, bool $direct = false): void
     {
         if (! $this->whitelist) {
             return;
         }
 
+        // Prevent duplicate completions
+        if ($direct) {
+            $exists = HelperJobdeskDailyHistory::where('employee_whitelists_id', $this->whitelist->id)
+                ->where('subject_id', $firstActivityId)
+                ->where('subject_type', HelperJobdeskRoutine::class)
+                ->whereDate('created_at', today())
+                ->first();
+
+            if ($exists && $exists->finish_at) {
+                return;
+            }
+        }
+
         $this->validate([
             'note' => 'nullable|string|max:1000',
-            'attachments.*' => 'nullable|image|max:5120', // Limit to 5MB images
+            'attachments.*' => 'nullable|image|max:5120',
         ]);
 
         if ($direct) {
-            // Direct completion setting start_at == finish_at == now
             $history = HelperJobdeskDailyHistory::create([
                 'employee_whitelists_id' => $this->whitelist->id,
                 'employee_whitelists_name' => $this->whitelist->name,
-                'subject_id' => $id,
+                'subject_id' => $firstActivityId,
                 'subject_type' => HelperJobdeskRoutine::class,
                 'start_at' => now(),
                 'finish_at' => now(),
                 'note' => $this->note ?: null,
             ]);
         } else {
-            // Completed after started, update the existing in-progress history row
             $history = HelperJobdeskDailyHistory::where('employee_whitelists_id', $this->whitelist->id)
-                ->where('subject_id', $id)
+                ->where('subject_id', $firstActivityId)
                 ->where('subject_type', HelperJobdeskRoutine::class)
                 ->whereNull('finish_at')
                 ->whereDate('created_at', today())
@@ -237,11 +289,10 @@ class Dashboard extends Component
                     'note' => $this->note ?: null,
                 ]);
             } else {
-                // Fallback direct insert if in-progress row was not found
                 $history = HelperJobdeskDailyHistory::create([
                     'employee_whitelists_id' => $this->whitelist->id,
                     'employee_whitelists_name' => $this->whitelist->name,
-                    'subject_id' => $id,
+                    'subject_id' => $firstActivityId,
                     'subject_type' => HelperJobdeskRoutine::class,
                     'start_at' => now(),
                     'finish_at' => now(),
@@ -250,7 +301,7 @@ class Dashboard extends Component
             }
         }
 
-        // Save uploaded photos
+        // Save attachments
         foreach ($this->attachments as $attachment) {
             $path = $attachment->store('daily-history-attachments', 'public');
             HelperJobdeskDailyHistoryAttachment::create([
@@ -262,10 +313,11 @@ class Dashboard extends Component
 
         $this->loadHelperRoutines();
         $this->selectNextIncomplete();
+        Alert::success($this, 'Berhasil', 'Laporan tugas berhasil disimpan.');
     }
 
     /**
-     * Render the dashboard layout view.
+     * Render the dashboard.
      */
     public function render(): View
     {

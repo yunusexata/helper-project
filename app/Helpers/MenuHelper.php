@@ -24,7 +24,7 @@ class MenuHelper
             [
                 'icon' => 'calendar',
                 'name' => 'Riwayat Jobdesk',
-                'path' => 'helper_jobdesk_history.index',
+                'path' => 'helper_jobdesk_daily_history.index',
             ],
             // [
             //     'icon' => 'testing',

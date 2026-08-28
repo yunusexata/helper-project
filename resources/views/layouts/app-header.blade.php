@@ -49,9 +49,9 @@
             </button>
 
             <!-- Logo (mobile only) -->
-            <a href="/" class="xl:hidden">
-                <img class="h-8 w-auto dark:hidden" src="/images/logo/logo_exata_dark.svg" alt="Logo Exata" />
-                <img class="h-8 w-auto hidden dark:block" src="/images/logo/logo_exata.svg" alt="Logo Exata" />
+            <a href="/" class="xl:hidden flex items-center gap-2">
+                <x-app-logo-icon class="size-7 fill-current text-blue-600 dark:text-white" />
+                <span class="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white">{{ config('app.name', 'Exata') }}</span>
             </a>
 
             <!-- Application Menu Toggle (mobile only) -->

@@ -11,7 +11,7 @@ Route::view('/', 'welcome')->name('home');
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', Dashboard::class)->name('dashboard');
     Route::get('daily-jobdesk', RoutineIndex::class)->name('helper_jobdesk_routine.index');
-    Route::get('daily-jobdesk/history', Index::class)->name('helper_jobdesk_history.index');
+    Route::get('daily-jobdesk/history', Index::class)->name('helper_jobdesk_daily_history.index');
 
     // User Management
     Route::get('account/user', App\Livewire\Account\User\Index::class)->name('user.index');
