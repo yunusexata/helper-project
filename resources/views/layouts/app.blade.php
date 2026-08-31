@@ -139,41 +139,49 @@
     @else
         <!-- Guest Clean Layout (No Sidebar, No Navbar Menus) -->
         <div class="min-h-screen flex flex-col justify-between">
-            <header class="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-50">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                    <a href="{{ route('home') }}" class="flex items-center gap-3">
-                        <div class="size-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm font-black text-lg">
+            <header class="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/95 dark:bg-slate-900/95 backdrop-blur sticky top-0 z-50">
+                <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between">
+                    <a href="{{ route('home') }}" class="flex items-center gap-2.5 sm:gap-3">
+                        <div class="size-8 sm:size-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-xs font-black text-base sm:text-lg shrink-0">
                             E
                         </div>
-                        <div>
-                            <span class="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white block leading-tight">
+                        <div class="leading-tight">
+                            <span class="text-xs font-black tracking-tight text-slate-900 dark:text-white block sm:hidden">
+                                EXATA INDONESIA
+                            </span>
+                            <span class="text-[9px] font-semibold text-slate-500 dark:text-slate-400 block sm:hidden">
+                                Monitoring Portal
+                            </span>
+
+                            <span class="hidden sm:block text-sm font-extrabold tracking-tight text-slate-900 dark:text-white">
                                 PT SUMBER REZEKI EXATA INDONESIA
                             </span>
-                            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
+                            <span class="hidden sm:block text-[11px] font-semibold text-slate-500 dark:text-slate-400">
                                 Helper Management Portal
                             </span>
                         </div>
                     </a>
 
-                    <div class="flex items-center gap-3">
-                        <a href="{{ route('home') }}" class="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 transition">
+                    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+                        <a href="{{ route('home') }}" class="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 transition px-1.5 py-1">
                             Beranda
                         </a>
                         <a href="{{ route('login') }}" 
-                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition">
+                            class="inline-flex items-center gap-1 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition whitespace-nowrap">
                             <span class="material-symbols-outlined text-sm">login</span>
-                            <span>Masuk ke Portal</span>
+                            <span class="inline sm:hidden">Masuk</span>
+                            <span class="hidden sm:inline">Masuk ke Portal</span>
                         </a>
                     </div>
                 </div>
             </header>
 
-            <main class="flex-grow p-4 mx-auto w-full max-w-6xl md:p-6">
+            <main class="flex-grow p-2.5 sm:p-6 mx-auto w-full max-w-6xl">
                 {{ $slot ?? '' }}
                 @yield('content')
             </main>
 
-            <footer class="border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-4 text-center text-xs text-slate-400">
+            <footer class="border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-3.5 sm:py-4 text-center text-[11px] sm:text-xs text-slate-400">
                 © {{ date('Y') }} PT Sumber Rezeki Exata Indonesia. Seluruh hak cipta dilindungi.
             </footer>
         </div>
