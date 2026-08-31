@@ -39,10 +39,10 @@ return new class extends Migration
         }
 
         $table->string('day');
-        $table->string('activity_name');
+        $table->text('activity_name');
         $table->text('note')->nullable();
-        $table->unsignedBigInteger('employee_whitelists_id');
-        $table->string('employee_whitelists_name');
+        $table->unsignedBigInteger('employee_whitelists_id')->nullable();
+        $table->string('employee_whitelists_name')->nullable();
 
         $table->bigInteger('created_by')->unsigned()->nullable();
         $table->bigInteger('updated_by')->unsigned()->nullable();

@@ -17,13 +17,15 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Seed roles, permissions, and daily routines
+
+        // Create default administrator user and assign Super Admin role
+
         $this->call([
             RoleAndPermissionSeeder::class,
             HelperJobdeskRoutineSeeder::class,
             HelperJobdeskHistorySeeder::class,
+            // HelperJobdeskDummyHistorySeeder::class,
         ]);
-
-        // Create default administrator user and assign Super Admin role
         $admin = User::factory()->create([
             'name' => 'Admin',
             'email' => 'admin@gmail.com',

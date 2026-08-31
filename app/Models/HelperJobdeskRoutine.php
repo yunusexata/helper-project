@@ -27,6 +27,7 @@ use Muhammadyunus1072\TrackHistory\HasTrackHistory;
  */
 #[Fillable([
     'day',
+    'task_group',
     'activity_name',
     'note',
     'order',

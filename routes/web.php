@@ -7,9 +7,9 @@ use App\Livewire\HelperJobdesk\Routine\Index as RoutineIndex;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
+Route::get('dashboard', Dashboard::class)->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', Dashboard::class)->name('dashboard');
     Route::get('daily-jobdesk', RoutineIndex::class)->name('helper_jobdesk_routine.index');
     Route::get('daily-jobdesk/history', Index::class)->name('helper_jobdesk_daily_history.index');
 

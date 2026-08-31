@@ -1,20 +1,40 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white antialiased dark:bg-linear-to-b dark:from-neutral-950 dark:to-neutral-900">
-        <div class="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-            <div class="flex w-full max-w-sm flex-col gap-2">
-                <a href="{{ route('home') }}" class="flex flex-col items-center gap-2 font-medium" wire:navigate>
-                    <span class="flex h-9 w-9 mb-1 items-center justify-center rounded-md">
-                        <x-app-logo-icon class="size-9 fill-current text-black dark:text-white" />
-                    </span>
-                    <span class="sr-only">{{ config('app.name', 'Laravel') }}</span>
+    <body class="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased flex flex-col items-center justify-center p-4 sm:p-6">
+        <div class="w-full max-w-md space-y-6">
+            <!-- Institutional Brand Header -->
+            <div class="text-center space-y-2">
+                <a href="{{ route('home') }}" class="inline-flex items-center gap-3 group">
+                    <div class="size-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-xl shadow-sm transition group-hover:scale-105">
+                        E
+                    </div>
+                    <div class="text-left">
+                        <span class="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white block leading-tight">
+                            PT SUMBER REZEKI EXATA INDONESIA
+                        </span>
+                        <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
+                            Helper Management Portal
+                        </span>
+                    </div>
                 </a>
-                <div class="flex flex-col gap-6">
-                    {{ $slot }}
-                </div>
+            </div>
+
+            <!-- Elevated Auth Card -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-sm p-6 sm:p-8 space-y-6">
+                {{ $slot }}
+            </div>
+
+            <!-- Footer Security Note -->
+            <div class="text-center space-y-1">
+                <p class="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                    Sistem internal resmi PT Sumber Rezeki Exata Indonesia
+                </p>
+                <p class="text-[10px] text-slate-400 dark:text-slate-500">
+                    © {{ date('Y') }} Seluruh hak cipta dilindungi.
+                </p>
             </div>
         </div>
 

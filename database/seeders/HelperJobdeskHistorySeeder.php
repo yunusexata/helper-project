@@ -20,21 +20,9 @@ class HelperJobdeskHistorySeeder extends Seeder
         $helpersData = [
             [
                 'name' => 'Pak Musa',
-                'email' => 'test@gmail.com',
+                'email' => 'musa@exata-indonesia.id',
                 'employee_id' => 'EMP-001',
                 'division' => 'Helper Office',
-            ],
-            [
-                'name' => 'Siti Aminah',
-                'email' => 'siti.aminah@exata.co.id',
-                'employee_id' => 'EMP-002',
-                'division' => 'Helper Pantry',
-            ],
-            [
-                'name' => 'Agus Wijaya',
-                'email' => 'agus.wijaya@exata.co.id',
-                'employee_id' => 'EMP-003',
-                'division' => 'Helper Driver',
             ],
         ];
 

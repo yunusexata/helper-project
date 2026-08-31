@@ -2,6 +2,7 @@
 
 namespace App\Livewire\HelperJobdesk\Routine;
 
+use App\Helpers\Alert;
 use App\Models\HelperJobdeskRoutine;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,7 +13,7 @@ use Livewire\Component;
 class Index extends Component
 {
     /**
-     * The active day.
+     * The active day filter.
      */
     public string $day = 'senin';
 
@@ -20,6 +21,11 @@ class Index extends Component
      * The ID of the routine being edited.
      */
     public ?int $editingRoutineId = null;
+
+    /**
+     * Form field: task group name.
+     */
+    public string $task_group = '';
 
     /**
      * Form field: activity name.
@@ -40,6 +46,7 @@ class Index extends Component
      * Validation rules.
      */
     protected array $rules = [
+        'task_group' => 'required|string|max:100',
         'activity_name' => 'required|string|max:255',
         'note' => 'nullable|string|max:1000',
         'order' => 'required|integer|min:1',
@@ -56,10 +63,11 @@ class Index extends Component
     /**
      * Open the modal in create mode.
      */
-    public function openAddModal(): void
+    public function openAddModal(?string $group = null): void
     {
         $this->resetErrorBag();
         $this->editingRoutineId = null;
+        $this->task_group = $group ?? '';
         $this->activity_name = '';
         $this->note = '';
 
@@ -77,6 +85,7 @@ class Index extends Component
         $routine = HelperJobdeskRoutine::findOrFail($id);
 
         $this->editingRoutineId = $id;
+        $this->task_group = $routine->task_group ?? '';
         $this->activity_name = $routine->activity_name;
         $this->note = $routine->note ?? '';
         $this->order = $routine->order;
@@ -92,29 +101,28 @@ class Index extends Component
     }
 
     /**
-     * Save the routine (create or update) and normalize orders.
+     * Save the routine (create or update) and normalize orders consecutively.
      */
     public function saveRoutine(): void
     {
         $this->validate();
 
+        $data = [
+            'day' => $this->day,
+            'task_group' => trim($this->task_group),
+            'activity_name' => trim($this->activity_name),
+            'note' => $this->note ? trim($this->note) : null,
+            'order' => $this->order,
+        ];
+
         if ($this->editingRoutineId) {
             $routine = HelperJobdeskRoutine::findOrFail($this->editingRoutineId);
-            $routine->update([
-                'activity_name' => $this->activity_name,
-                'note' => $this->note,
-                'order' => $this->order,
-            ]);
+            $routine->update($data);
         } else {
-            $routine = HelperJobdeskRoutine::create([
-                'day' => $this->day,
-                'activity_name' => $this->activity_name,
-                'note' => $this->note,
-                'order' => $this->order,
-            ]);
+            $routine = HelperJobdeskRoutine::create($data);
         }
 
-        // Fetch all other routines to dynamically splice and re-sequence
+        // Fetch all other routines on this day to dynamically splice and re-sequence
         $routines = HelperJobdeskRoutine::where('day', $this->day)
             ->where('id', '!=', $routine->id)
             ->orderBy('order')
@@ -126,46 +134,78 @@ class Index extends Component
 
         // Normalize orders consecutively
         foreach ($routines as $index => $item) {
-            $item->update(['order' => $index + 1]);
+            if ($item->order !== $index + 1) {
+                $item->update(['order' => $index + 1]);
+            }
         }
 
         $this->closeModal();
+        Alert::information($this, 'Aktivitas rutinitas berhasil disimpan.');
     }
 
     /**
-     * Handle drag and drop reordering and normalize orders consecutively.
+     * Delete an individual routine activity and normalize order.
      */
-    public function updateOrder(int $id, int $position): void
+    public function deleteRoutine(int $id): void
     {
         $routine = HelperJobdeskRoutine::findOrFail($id);
+        $day = $routine->day;
+        $routine->delete();
 
-        $routines = HelperJobdeskRoutine::where('day', $routine->day)
-            ->orderBy('order')
-            ->get();
-
-        $items = $routines->reject(fn ($r) => $r->id === $id)->values()->all();
-
-        array_splice($items, $position, 0, [$routine]);
-
-        // Save and normalize orders
-        foreach ($items as $index => $item) {
-            $newOrder = $index + 1;
-            if ($item->order !== $newOrder) {
-                $item->update(['order' => $newOrder]);
+        // Normalize remaining orders
+        $remaining = HelperJobdeskRoutine::where('day', $day)->orderBy('order')->get();
+        foreach ($remaining as $index => $item) {
+            if ($item->order !== $index + 1) {
+                $item->update(['order' => $index + 1]);
             }
         }
+
+        Alert::information($this, 'Aktivitas berhasil dihapus.');
     }
 
     /**
-     * Get the routines for the current day, ordered sequentially.
-     *
-     * @return Collection<int, HelperJobdeskRoutine>
+     * Delete an entire task group on the current day.
      */
-    public function getRoutinesProperty(): Collection
+    public function deleteGroup(string $groupName): void
+    {
+        HelperJobdeskRoutine::where('day', $this->day)
+            ->where('task_group', $groupName)
+            ->delete();
+
+        // Normalize remaining orders
+        $remaining = HelperJobdeskRoutine::where('day', $this->day)->orderBy('order')->get();
+        foreach ($remaining as $index => $item) {
+            if ($item->order !== $index + 1) {
+                $item->update(['order' => $index + 1]);
+            }
+        }
+
+        Alert::information($this, "Grup {$groupName} dan seluruh aktivitasnya berhasil dihapus.");
+    }
+
+    /**
+     * Get the routines for the current day grouped by task_group.
+     */
+    public function getGroupedRoutinesProperty(): Collection|\Illuminate\Support\Collection
     {
         return HelperJobdeskRoutine::where('day', $this->day)
             ->orderBy('order')
-            ->get();
+            ->get()
+            ->groupBy('task_group');
+    }
+
+    /**
+     * Get unique task_group names for auto-complete suggestions.
+     */
+    public function getExistingGroupsProperty(): array
+    {
+        return HelperJobdeskRoutine::where('day', $this->day)
+            ->whereNotNull('task_group')
+            ->distinct()
+            ->pluck('task_group')
+            ->sort()
+            ->values()
+            ->toArray();
     }
 
     /**
@@ -173,8 +213,15 @@ class Index extends Component
      */
     public function render(): View
     {
+        $grouped = $this->groupedRoutines;
+        $totalActivities = $grouped->flatten()->count();
+        $totalGroups = $grouped->count();
+
         return view('livewire.helper-jobdesk.routine.index', [
-            'routines' => $this->getRoutinesProperty(),
+            'groupedRoutines' => $grouped,
+            'existingGroups' => $this->existingGroups,
+            'totalActivities' => $totalActivities,
+            'totalGroups' => $totalGroups,
         ]);
     }
 }

@@ -6,6 +6,7 @@ use App\Helpers\Alert;
 use App\Models\EmployeeWhitelist;
 use App\Models\HelperJobdeskDailyHistory;
 use App\Models\HelperJobdeskDailyHistoryAttachment;
+use App\Models\HelperJobdeskRequest;
 use App\Models\HelperJobdeskRoutine;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
@@ -20,7 +21,7 @@ class Dashboard extends Component
     use WithFileUploads;
 
     /**
-     * Helper specific properties.
+     * Helper specific routine properties.
      */
     public Collection $groupedRoutines;
 
@@ -33,9 +34,26 @@ class Dashboard extends Component
     public ?EmployeeWhitelist $whitelist = null;
 
     /**
+     * Helper specific request properties.
+     */
+    public string $requestActivityName = '';
+
+    public string $requestNote = '';
+
+    public array $requestAttachments = [];
+
+    public ?HelperJobdeskRequest $activeRequest = null;
+
+    public ?HelperJobdeskDailyHistory $activeRequestHistory = null;
+
+    public Collection $todayRequests;
+
+    /**
      * Admin/Staff specific properties.
      */
     public ?int $adminSelectedHelperId = null;
+
+    public string $adminSelectedTanggal = '';
 
     public Collection $helpersList;
 
@@ -49,6 +67,8 @@ class Dashboard extends Component
         $this->groupedRoutines = collect();
         $this->adminRoutines = collect();
         $this->helpersList = collect();
+        $this->todayRequests = collect();
+        $this->adminSelectedTanggal = now()->format('Y-m-d');
 
         $user = auth()->user();
         $isHelper = false;
@@ -63,6 +83,7 @@ class Dashboard extends Component
             $this->whitelist = EmployeeWhitelist::where('email', $user->email)->first();
             $this->loadHelperRoutines();
             $this->selectNextIncomplete();
+            $this->loadHelperRequests();
         } else {
             try {
                 $this->helpersList = User::role('Helper')->get();
@@ -118,6 +139,151 @@ class Dashboard extends Component
         }
 
         $this->groupedRoutines = $processedGroups;
+    }
+
+    /**
+     * Load today's requests and any currently in-progress request for the helper.
+     */
+    public function loadHelperRequests(): void
+    {
+        if (! $this->whitelist) {
+            $this->activeRequest = null;
+            $this->activeRequestHistory = null;
+            $this->todayRequests = collect();
+
+            return;
+        }
+
+        $requests = HelperJobdeskRequest::where('employee_whitelists_id', $this->whitelist->id)
+            ->whereDate('created_at', today())
+            ->with(['dailyHistories.attachments'])
+            ->latest()
+            ->get();
+
+        $activeReq = null;
+        $activeHist = null;
+
+        foreach ($requests as $req) {
+            $inProgressHistory = $req->dailyHistories
+                ->whereNull('finish_at')
+                ->where('employee_whitelists_id', $this->whitelist->id)
+                ->first();
+
+            if ($inProgressHistory && ! $activeReq) {
+                $activeReq = $req;
+                $activeHist = $inProgressHistory;
+            }
+        }
+
+        $this->activeRequest = $activeReq;
+        $this->activeRequestHistory = $activeHist;
+        $this->todayRequests = $requests;
+    }
+
+    /**
+     * Start a new ad-hoc jobdesk request.
+     */
+    public function startRequest(): void
+    {
+        if (! $this->whitelist) {
+            return;
+        }
+
+        // Prevent starting a new request if one is currently in-progress
+        if ($this->activeRequest) {
+            Alert::information($this, 'Ada pekerjaan request yang sedang berjalan.', 2500, Alert::ICON_WARNING);
+
+            return;
+        }
+
+        $this->validate([
+            'requestActivityName' => 'required|string|min:3|max:1000',
+        ], [
+            'requestActivityName.required' => 'Nama pekerjaan request wajib diisi.',
+            'requestActivityName.min' => 'Nama pekerjaan minimal 3 karakter.',
+        ]);
+
+        $request = HelperJobdeskRequest::create([
+            'day' => strtolower(now()->locale('id')->dayName),
+            'activity_name' => trim($this->requestActivityName),
+            'note' => null,
+            'employee_whitelists_id' => $this->whitelist->id,
+            'employee_whitelists_name' => $this->whitelist->name,
+        ]);
+
+        HelperJobdeskDailyHistory::create([
+            'employee_whitelists_id' => $this->whitelist->id,
+            'employee_whitelists_name' => $this->whitelist->name,
+            'subject_id' => $request->id,
+            'subject_type' => HelperJobdeskRequest::class,
+            'start_at' => now(),
+            'finish_at' => null,
+        ]);
+
+        $this->requestActivityName = '';
+        $this->requestNote = '';
+        $this->requestAttachments = [];
+        $this->resetErrorBag();
+
+        $this->loadHelperRequests();
+        Alert::information($this, 'Pekerjaan request dimulai. Timer sedang berjalan.');
+    }
+
+    /**
+     * Complete the currently active jobdesk request.
+     */
+    public function completeRequest(): void
+    {
+        if (! $this->whitelist || ! $this->activeRequest || ! $this->activeRequestHistory) {
+            return;
+        }
+
+        $this->validate([
+            'requestNote' => 'nullable|string|max:1000',
+            'requestAttachments.*' => 'nullable|image|max:5120',
+        ]);
+
+        $this->activeRequestHistory->update([
+            'finish_at' => now(),
+            'note' => $this->requestNote ? trim($this->requestNote) : null,
+        ]);
+
+        // Save uploaded photos
+        foreach ($this->requestAttachments as $attachment) {
+            $path = $attachment->store('daily-history-attachments', 'public');
+            HelperJobdeskDailyHistoryAttachment::create([
+                'helper_jobdesk_daily_histories' => $this->activeRequestHistory->id,
+                'disk' => 'public',
+                'path' => $path,
+            ]);
+        }
+
+        $this->requestNote = '';
+        $this->requestAttachments = [];
+        $this->resetErrorBag();
+
+        $this->loadHelperRequests();
+        Alert::information($this, 'Pekerjaan request berhasil diselesaikan.');
+    }
+
+    /**
+     * Cancel the currently active jobdesk request.
+     */
+    public function cancelRequest(): void
+    {
+        if (! $this->whitelist || ! $this->activeRequest || ! $this->activeRequestHistory) {
+            return;
+        }
+
+        $this->activeRequestHistory->delete();
+        $this->activeRequest->delete();
+
+        $this->requestNote = '';
+        $this->requestAttachments = [];
+        $this->resetErrorBag();
+
+        $this->loadHelperRequests();
+        Alert::information($this, 'Pekerjaan request telah dibatalkan.');
     }
 
     /**
@@ -246,7 +412,7 @@ class Dashboard extends Component
         if ($group) {
             $this->selectGroup($group->name);
         }
-        Alert::success($this, 'Berhasil', 'Tugas dimulai. Timer sedang berjalan.');
+        Alert::information($this, 'Tugas dimulai. Timer sedang berjalan.');
     }
 
     /**
@@ -324,7 +490,7 @@ class Dashboard extends Component
 
         $this->loadHelperRoutines();
         $this->selectNextIncomplete();
-        Alert::success($this, 'Berhasil', 'Laporan tugas berhasil disimpan.');
+        Alert::information($this, 'Laporan tugas berhasil disimpan.');
     }
 
     /**

@@ -114,28 +114,70 @@
     <x-common.preloader/>
     {{-- preloader end --}}
 
-    <div class="min-h-screen xl:flex">
-        @include('layouts.backdrop')
-        @include('layouts.sidebar')
+    @auth
+        <div class="min-h-screen xl:flex">
+            @include('layouts.backdrop')
+            @include('layouts.sidebar')
 
-        <div class="flex-1 transition-all duration-300 ease-in-out flex flex-col min-h-screen"
-            :class="{
-                'xl:ml-[290px]': $store.sidebar.isExpanded || $store.sidebar.isHovered,
-                'xl:ml-[90px]': !$store.sidebar.isExpanded && !$store.sidebar.isHovered,
-                'ml-0': $store.sidebar.isMobileOpen
-            }">
-            <!-- app header start -->
-            @include('layouts.app-header')
-            <!-- app header end -->
-            
-            <main class="flex-grow p-4 mx-auto w-full max-w-7xl md:p-6">
-                @yield('header')
+            <div class="flex-1 transition-all duration-300 ease-in-out flex flex-col min-h-screen"
+                :class="{
+                    'xl:ml-[290px]': $store.sidebar.isExpanded || $store.sidebar.isHovered,
+                    'xl:ml-[90px]': !$store.sidebar.isExpanded && !$store.sidebar.isHovered,
+                    'ml-0': $store.sidebar.isMobileOpen
+                }">
+                <!-- app header start -->
+                @include('layouts.app-header')
+                <!-- app header end -->
+                
+                <main class="flex-grow p-4 mx-auto w-full max-w-7xl md:p-6">
+                    @yield('header')
+                    {{ $slot ?? '' }}
+                    @yield('content')
+                </main>
+            </div>
+        </div>
+    @else
+        <!-- Guest Clean Layout (No Sidebar, No Navbar Menus) -->
+        <div class="min-h-screen flex flex-col justify-between">
+            <header class="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                    <a href="{{ route('home') }}" class="flex items-center gap-3">
+                        <div class="size-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm font-black text-lg">
+                            E
+                        </div>
+                        <div>
+                            <span class="text-sm font-extrabold tracking-tight text-slate-900 dark:text-white block leading-tight">
+                                PT SUMBER REZEKI EXATA INDONESIA
+                            </span>
+                            <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">
+                                Helper Management Portal
+                            </span>
+                        </div>
+                    </a>
+
+                    <div class="flex items-center gap-3">
+                        <a href="{{ route('home') }}" class="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 transition">
+                            Beranda
+                        </a>
+                        <a href="{{ route('login') }}" 
+                            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition">
+                            <span class="material-symbols-outlined text-sm">login</span>
+                            <span>Masuk ke Portal</span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <main class="flex-grow p-4 mx-auto w-full max-w-6xl md:p-6">
                 {{ $slot ?? '' }}
                 @yield('content')
             </main>
-        </div>
 
-    </div>
+            <footer class="border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 py-4 text-center text-xs text-slate-400">
+                © {{ date('Y') }} PT Sumber Rezeki Exata Indonesia. Seluruh hak cipta dilindungi.
+            </footer>
+        </div>
+    @endauth
 
 </body>
 
@@ -174,13 +216,14 @@
             });
         });
         Livewire.on("{{ \App\Helpers\Alert::EVENT_INFORMATION }}", (event) => {
-            console.log(event);
             Swal.fire({
+                toast: true,
                 position: "top-end",
                 icon: event[0],
                 title: event[1],
                 showConfirmButton: false,
-                timer: 1500
+                timer: event[2] || 2000,
+                timerProgressBar: true
             });
         });
 

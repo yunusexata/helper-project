@@ -53,8 +53,9 @@ class Alert
         Component $component,
         $title,
         $timer = 1500,
+        $icon = self::ICON_SUCCESS,
     ) {
-        $component->dispatch(self::EVENT_INFORMATION, self::ICON_SUCCESS, $title, $timer);
+        $component->dispatch(self::EVENT_INFORMATION, $icon, $title, $timer);
     }
 
     public static function loading(
