@@ -55,15 +55,11 @@ class RoleAndPermissionSeeder extends Seeder
             PermissionHelper::transform(PermissionHelper::ACCESS_HELPER_JOBDESK_REQUEST, PermissionHelper::TYPE_READ),
             PermissionHelper::transform(PermissionHelper::ACCESS_HELPER_JOBDESK_REQUEST, PermissionHelper::TYPE_UPDATE),
             PermissionHelper::transform(PermissionHelper::ACCESS_HELPER_JOBDESK_REQUEST, PermissionHelper::TYPE_DELETE),
-
-            PermissionHelper::transform(PermissionHelper::ACCESS_HELPER_JOBDESK_ROUTINE, PermissionHelper::TYPE_READ),
         ]);
 
         // Helper: Read routines, view/create requests, CRUD on histories (except delete)
         $helperRole = Role::firstOrCreate(['name' => 'Helper']);
         $helperRole->syncPermissions([
-            PermissionHelper::transform(PermissionHelper::ACCESS_HELPER_JOBDESK_ROUTINE, PermissionHelper::TYPE_READ),
-
             PermissionHelper::transform(PermissionHelper::ACCESS_HELPER_JOBDESK_REQUEST, PermissionHelper::TYPE_CREATE),
             PermissionHelper::transform(PermissionHelper::ACCESS_HELPER_JOBDESK_REQUEST, PermissionHelper::TYPE_READ),
 
