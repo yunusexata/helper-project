@@ -12,8 +12,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
-<body class="min-h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased flex flex-col justify-between"
-    x-data="{ showMonitoring: false }">
+<body class="min-h-full bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 antialiased flex flex-col justify-between">
     
     <!-- Top Navigation Header -->
     <header class="border-b border-slate-200/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 backdrop-blur sticky top-0 z-50">
@@ -35,12 +34,6 @@
 
             <!-- Right Action / Auth Status -->
             <div class="flex items-center gap-3">
-                <button type="button" @click="showMonitoring = !showMonitoring" 
-                    class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition">
-                    <span class="material-symbols-outlined text-sm text-blue-600 dark:text-blue-400" x-text="showMonitoring ? 'close' : 'monitoring'"></span>
-                    <span x-text="showMonitoring ? 'Tutup Monitoring' : 'Monitoring Live'"></span>
-                </button>
-
                 @auth
                     <div class="hidden sm:flex flex-col text-right">
                         <span class="text-xs font-bold text-slate-800 dark:text-slate-200">{{ auth()->user()->name }}</span>
@@ -63,77 +56,28 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="flex-grow py-8 md:py-14">
+    <main class="flex-grow py-8 md:py-12">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
             
-            <!-- SECTION A: Default Hero Section (Replaced when showMonitoring is true) -->
-            <div x-show="!showMonitoring" class="text-center max-w-3xl mx-auto space-y-6 transition-all duration-300">
-                <!-- Institution Badge -->
+            <!-- Page Header Introduction -->
+            <div class="text-center max-w-3xl mx-auto space-y-3">
                 <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
                     <span class="size-2 rounded-full bg-blue-600 animate-pulse"></span>
                     Portal Operasional & Pelaporan Harian
                 </div>
 
-                <!-- Main Title -->
-                <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                    Efisiensi & Transparansi Kerja Petugas Terpadu
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    Monitoring Progres Harian Petugas (Live)
                 </h1>
 
-                <!-- Subtitle -->
-                <p class="text-base sm:text-lg text-slate-650 dark:text-slate-350 leading-relaxed max-w-2xl mx-auto">
-                    Platform digital operasional PT Sumber Rezeki Exata Indonesia untuk penjadwalan rutinitas kerja, penanganan permintaan khusus, serta monitoring progres real-time.
+                <p class="text-sm text-slate-650 dark:text-slate-350 leading-relaxed max-w-2xl mx-auto">
+                    Pantau status pengerjaan rutinitas dan permintaan tugas petugas harian secara real-time di lingkungan kerja PT Sumber Rezeki Exata Indonesia.
                 </p>
-
-                <!-- Action Button Group -->
-                <div class="flex flex-wrap items-center justify-center gap-3.5 pt-2">
-                    <!-- Button to Show Live Monitoring Datatable -->
-                    <button type="button" @click="showMonitoring = true" 
-                        class="px-6 py-3.5 rounded-xl text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition inline-flex items-center gap-2">
-                        <span class="material-symbols-outlined text-base">monitoring</span>
-                        <span>Pantau Monitoring Kerja (Live)</span>
-                    </button>
-
-                    @auth
-                        <a href="{{ route('dashboard') }}" 
-                            class="px-6 py-3.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition inline-flex items-center gap-2">
-                            <span class="material-symbols-outlined text-base">dashboard</span>
-                            <span>Buka Dashboard</span>
-                        </a>
-                    @else
-                        <a href="{{ route('login') }}" 
-                            class="px-6 py-3.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition inline-flex items-center gap-2">
-                            <span class="material-symbols-outlined text-base">lock</span>
-                            <span>Masuk ke Portal</span>
-                        </a>
-                    @endauth
-                </div>
             </div>
 
-            <!-- SECTION B: Live Monitoring Dashboard (Replacing Hero on Click) -->
-            <div x-show="showMonitoring" x-cloak class="space-y-6 transition-all duration-300">
-                <!-- Monitoring Header with Close Button -->
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="size-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-2xl">monitoring</span>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Monitoring Progres Harian Petugas (Live)</h2>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pantau status pengerjaan rutinitas dan permintaan tugas petugas harian secara real-time.</p>
-                        </div>
-                    </div>
-
-                    <button type="button" @click="showMonitoring = false" 
-                        class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition self-start sm:self-auto shadow-sm">
-                        <span class="material-symbols-outlined text-sm">close</span>
-                        <span>Tutup Monitoring</span>
-                    </button>
-                </div>
-
-                <!-- Embedded Livewire Monitoring Dashboard -->
-                <div>
-                    <livewire:dashboard />
-                </div>
+            <!-- Live Monitoring Dashboard Component (Rendered by Default) -->
+            <div class="w-full">
+                <livewire:dashboard />
             </div>
 
             <!-- 3 Formal Pillar Cards -->
