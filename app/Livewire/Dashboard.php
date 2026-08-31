@@ -488,6 +488,10 @@ class Dashboard extends Component
             ]);
         }
 
+        $this->note = '';
+        $this->attachments = [];
+        $this->resetErrorBag();
+
         $this->loadHelperRoutines();
         $this->selectNextIncomplete();
         Alert::information($this, 'Laporan tugas berhasil disimpan.');
