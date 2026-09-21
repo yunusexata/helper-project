@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Exports\DailyJobdeskExport;
 use App\Helpers\Alert;
 use App\Models\EmployeeWhitelist;
 use App\Models\HelperJobdeskDailyHistory;
@@ -11,9 +12,11 @@ use App\Models\HelperJobdeskRoutine;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
 
 #[Title('Dashboard')]
 class Dashboard extends Component
@@ -58,6 +61,17 @@ class Dashboard extends Component
     public Collection $helpersList;
 
     public Collection $adminRoutines;
+
+    /**
+     * Export Excel modal properties.
+     */
+    public ?int $exportPetugasId = null;
+
+    public string $exportTanggalAwal = '';
+
+    public string $exportTanggalAkhir = '';
+
+    public bool $showExportModal = false;
 
     /**
      * Mount the component.
@@ -350,6 +364,62 @@ class Dashboard extends Component
     public function updatedAdminSelectedHelperId(): void
     {
         $this->loadAdminRoutines();
+    }
+
+    /**
+     * Open the export Excel modal.
+     */
+    public function openExportModal(): void
+    {
+        $this->resetValidation();
+        $this->exportPetugasId = $this->adminSelectedHelperId ?? $this->helpersList->first()?->id;
+        $this->exportTanggalAwal = $this->adminSelectedTanggal ?: now()->format('Y-m-d');
+        $this->exportTanggalAkhir = $this->adminSelectedTanggal ?: now()->format('Y-m-d');
+        $this->showExportModal = true;
+        $this->dispatch('open-export-modal');
+    }
+
+    /**
+     * Close the export Excel modal.
+     */
+    public function closeExportModal(): void
+    {
+        $this->showExportModal = false;
+        $this->resetValidation();
+        $this->dispatch('close-export-modal');
+    }
+
+    /**
+     * Export daily jobdesk report to Excel.
+     */
+    public function exportExcel()
+    {
+        abort_unless(auth()->check(), 403, 'Anda harus login untuk melakukan export.');
+
+        $this->validate([
+            'exportPetugasId' => 'required|exists:users,id',
+            'exportTanggalAwal' => 'required|date',
+            'exportTanggalAkhir' => 'required|date|after_or_equal:exportTanggalAwal',
+        ], [
+            'exportPetugasId.required' => 'Silakan pilih petugas terlebih dahulu.',
+            'exportPetugasId.exists' => 'Petugas yang dipilih tidak valid.',
+            'exportTanggalAwal.required' => 'Tanggal awal wajib diisi.',
+            'exportTanggalAwal.date' => 'Format tanggal awal tidak valid.',
+            'exportTanggalAkhir.required' => 'Tanggal akhir wajib diisi.',
+            'exportTanggalAkhir.date' => 'Format tanggal akhir tidak valid.',
+            'exportTanggalAkhir.after_or_equal' => 'Tanggal akhir tidak boleh mendahului tanggal awal.',
+        ]);
+
+        $petugas = User::findOrFail($this->exportPetugasId);
+        $cleanName = Str::slug($petugas->name);
+        $fileName = "laporan-jobdesk-{$cleanName}-{$this->exportTanggalAwal}-sd-{$this->exportTanggalAkhir}.xlsx";
+
+        $this->closeExportModal();
+
+        return Excel::download(
+            new DailyJobdeskExport($this->exportPetugasId, $this->exportTanggalAwal, $this->exportTanggalAkhir),
+            $fileName
+        );
     }
 
     /**

@@ -18,6 +18,7 @@
         "livewire/blaze": "^1.0",
         "livewire/flux": "^2.13.1",
         "livewire/livewire": "^4.1",
+        "maatwebsite/excel": "^4.0",
         "muhammadyunus1072/track-history": "^1.0",
         "spatie/laravel-permission": "^8.3",
         "vinkla/hashids": "^14.0"

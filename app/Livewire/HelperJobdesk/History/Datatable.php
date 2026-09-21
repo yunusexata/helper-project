@@ -259,6 +259,8 @@ class Datatable extends Component
             ? "GROUP_CONCAT(r.activity_name, '|||')"
             : "STRING_AGG(r.activity_name, '|||')";
 
+        $orderCol = DB::connection()->getDriverName() === 'mysql' ? 'r.`order`' : 'r."order"';
+
         // 1. Grouped Routines for the selected day (1 row per task_group)
         $routinesQuery = DB::table('helper_jobdesk_routines as r')
             ->leftJoin('helper_jobdesk_daily_histories as h', function ($join) use ($whitelistId) {
@@ -279,7 +281,7 @@ class Datatable extends Component
                 DB::raw('MAX(h.start_at) as start_at'),
                 DB::raw('MAX(h.finish_at) as finish_at'),
                 DB::raw('MAX(h.note) as logged_note'),
-                DB::raw('MIN(r.order) as sort_order'),
+                DB::raw("MIN({$orderCol}) as sort_order"),
             ]);
 
         // 2. All Ad-hoc Requests logged for that helper on that date
